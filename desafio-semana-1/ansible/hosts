@@ -1,0 +1,3 @@
+# File: hosts
+[server]
+server ansible_host=192.168.52.110 ansible_ssh_private_key_file=/home/darioc/.ssh/terraform_proxmox_key ansible_user=darioc remote_user=darioc

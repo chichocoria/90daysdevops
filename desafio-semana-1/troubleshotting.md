@@ -1,0 +1,99 @@
+al correr terraform apply daba el siguiente error:
+
+╷
+│ Error: error creating Guest: 403 Permission check failed (/sdn/zones/localnetwork/vmbr0, SDN.Use), error status: {"message":"Permission check failed (/sdn/zones/localnetwork/vmbr0, SDN.Use)\n","data":null} (params: map[full:true name:desafio-semana-1 newid:106 target:pve])
+│ 
+│   with proxmox_vm_qemu.desafio-semana-1[0],
+│   on main.tf line 20, in resource "proxmox_vm_qemu" "desafio-semana-1":
+│   20: resource "proxmox_vm_qemu" "desafio-semana-1" {
+│ 
+╵
+Releasing state lock. This may take a few moments...
+
+Solucion
+Desde el shell de proxmox correr el siguiente comando:
+
+pveum acl modify / -user terraform_user@pve -role PVESDNUser
+
+----
+
+[darioc@90days-devops .ssh]$ cat terraform_proxmox_key.pub 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCb3UqBkcD53PCh+YBbB27VNaTekHBXRoaOWGiTLYa4kC3rMYB5KLRb4m6BcvL2/ri7OQZZ/Zxzb6/SSdtsCIiBMvyyZQqsrImtDupSVWrzxE5L5erx5vvuFwdVfWgApmaLLL2qWLQRrHHOeFLUkVVjr9kf4qFsYjwmNn8C5KqIS2ZgI/4+Bjwz+ESrvv9Lej3QBj95ENOJa20NQqnVKnOtKV7dV4IxFVQBnTQw1Ca+SmIDQj/YPVruf/Mua5+RjW9s8YMRzUZt+zduosCB/Wie2mQFP7g1s8Xh3Y/MXEa/L4Rz1WDWLDJrOtSolWuN2kF7gCPKtEJfS9YZ25+dDJGkVkfi+BGe4x1XFS8ZAI8EHv7HsYjEdHf8rtAz7qZKLeV9U50iLdQyTcMtvjUOvY5j6EM2iP2VYMQF1LpN/TrUghht8YP+vUBRLglyyBam5Q6oUyQogxHHW4uOlpl4hO+Hj19OahnLIrg9vNJMP0gvt85PbUfEkN8wFdjTrSki2SjZsbAg9cruo/f0s5DDYir6OcN0l1god66W5oRZ4UJtUpN7YMGFtnYpHmLvEiJuhFK4hn0/TRApBywiWk0mAQxiXWw8Z+iRfOAskmWS6bhfezC1zga0hBEU9gFxTnHUj1FNVJYsUbShFvwGGhLv0/XrPboM5U+J1yewd85jupBycQ== terraform-proxmox
+
+
+[darioc@90days-devops .ssh]$ cat terraform_proxmox_key
+-----BEGIN OPENSSH PRIVATE KEY-----
+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
+-----END OPENSSH PRIVATE KEY-----
+
+
+---
+
+Install Redis:
+
+sudo apt-get install lsb-release curl gpg
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+sudo chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+sudo apt-get update
+sudo apt-get install redis
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+
+Install PostgreSQL
+
+sudo apt install postgresql
+
+sudo systemctl start postgresql.service
+
+Install NodeJS
+
+sudo apt install nodejs npm -y
+
+sudo apt install python3-pip

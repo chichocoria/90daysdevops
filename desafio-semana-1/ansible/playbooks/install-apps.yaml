@@ -1,0 +1,117 @@
+---
+- name: Configurar servidor con dependencias
+  hosts: all
+  become: yes
+  vars:
+    #postgres_password: "postgres"  # ¡Cambia esto en producción!
+    #postgres_version: "14"        # Ajusta según tu versión
+  tasks:
+    # Actualizar el sistema primero
+    - name: Actualizar repositorios y paquetes
+      apt:
+        update_cache: yes
+        upgrade: dist
+        autoremove: yes
+
+    # Instalar dependencias comunes
+    - name: Instalar dependencias básicas
+      apt:
+        name:
+          - lsb-release
+          - curl
+          - gpg
+          - software-properties-common
+        state: present
+
+    # Instalar Redis
+    - name: Descargar GPG key de Redis
+      get_url:
+        url: https://packages.redis.io/gpg
+        dest: /tmp/redis.gpg
+        mode: '0644'
+
+    - name: Desarmar la clave y moverla al keyring
+      command: gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg /tmp/redis.gpg
+      args:
+        creates: /usr/share/keyrings/redis-archive-keyring.gpg
+
+    - name: Crear archivo del repositorio de Redis
+      copy:
+        dest: /etc/apt/sources.list.d/redis.list
+        content: |
+          deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb {{ ansible_lsb.codename }} main
+        mode: '0644'
+
+    - name: Actualizar caché de paquetes
+      apt:
+        update_cache: yes
+
+    - name: Instalar Redis
+      apt:
+        name: redis
+        state: present
+
+    - name: Habilitar y arrancar Redis
+      systemd:
+        name: redis-server
+        enabled: yes
+        state: started
+
+    # Instalar PostgreSQL
+    - name: Instalar PostgreSQL
+      apt:
+        name: postgresql
+        state: latest
+
+    - name: Iniciar servicio PostgreSQL
+      systemd:
+        name: postgresql
+        enabled: yes
+        state: started
+
+    # Instalar Node.js y npm
+    - name: Instalar Node.js y npm
+      apt:
+        name:
+          - nodejs
+          - npm
+        state: latest
+
+    - name: Instalar pip para Python 3
+      apt:
+        name: python3-pip
+        state: latest
+
+    - name: Copiar script de database y puesta a punto de Local a Remote location
+      copy:
+       src: ~/90daysdevops/desafio-semana-1/scripts/database_postgres.sh
+       dest: /home/darioc/database_postgres.sh
+       mode: "0755"
+       owner: darioc
+       group: darioc
+    
+    # Tarea 3: Ejecutar el script
+    - name: Ejecutar script en host remoto
+      ansible.builtin.command: /home/darioc/database_postgres.sh
+      args:
+        chdir: /home/darioc/  # Directorio desde donde se ejecutará
+      register: script_output
+      become: false  # Se ejecuta como el usuario remoto
+    
+    - name: Copiar script para correr apps de Local a Remote location
+      copy:
+       src: ~/90daysdevops/desafio-semana-1/scripts/iniciar_apps.sh
+       dest: /home/darioc/roxs-devops-project90/roxs-voting-app/iniciar_apps.sh
+       mode: "0755"
+       owner: darioc
+       group: darioc
+
+        # Tarea 3: Ejecutar el script
+    - name: Ejecutar script en host remoto
+      ansible.builtin.command: /home/darioc/roxs-devops-project90/roxs-voting-app/iniciar_apps.sh
+      args:
+        chdir: /home/darioc/roxs-devops-project90/roxs-voting-app/  # Directorio desde donde se ejecutará
+      register: script_output
+      become: false  # Se ejecuta como el usuario remoto 
+
+      
