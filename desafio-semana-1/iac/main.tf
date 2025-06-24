@@ -91,9 +91,17 @@ variable "domain" {
   default = "chicho.com.ar"
 }
 
-resource "cloudflare_record" "semana1" {
+resource "cloudflare_record" "vote" {
   zone_id = var.zone_id
-  name    = "semana1"
+  name    = "vote"
+  value   = "chicho.com.ar"
+  type    = "CNAME"
+  proxied = true
+}
+
+resource "cloudflare_record" "result" {
+  zone_id = var.zone_id
+  name    = "result"
   value   = "chicho.com.ar"
   type    = "CNAME"
   proxied = true
