@@ -100,11 +100,5 @@ El playbook de Ansible realiza las siguientes tareas:
      * vote.chicho.com.ar
      * result.chicho.com.ar
 
-<div style="display: flex;">
-  <div style="flex: 1;">
-    <img src="/docs/vote.png" width="100%" />
-  </div>
-  <div style="flex: 1;">
-    <img src="/docs/result.png" width="100%" />
-  </div>
-</div>
+
+![Imagen 1](/docs/vote.png) ![Imagen 2](/docs/result.png)
