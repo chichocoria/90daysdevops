@@ -97,8 +97,8 @@ El playbook de Ansible realiza las siguientes tareas:
 * Automatización básica de dependencias
 * Experiencia práctica de orquestar servicios sin Docker (aún)
 * Acceder a las URL para verificar que los servicios estan funcionando.
-     * vote.chicho.com.ar
-     * result.chicho.com.ar
+     * [Vote app](https://vote.chicho.com.ar)
+     * [Result app](https://result.chicho.com.ar)
 
 
 ![Imagen 1](/desafio-semana-1/docs/vote.png) ![Imagen 2](/desafio-semana-1/docs/result.png)
