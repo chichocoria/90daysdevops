@@ -27,7 +27,7 @@ Como parte del desafio de la primer semana
 
 ---
 
-![Mapa de la arquitectura](/docs/mapa_arquitectura.png)
+![Mapa de la arquitectura](/desafio-semana-1/docs/mapa_arquitectura.png)
 
 ---
 
@@ -66,7 +66,7 @@ cloudflare_api_token    = "<token>"
 ```
 $ terraform login
 ```
-![tflogin](/docs/terraformlogin.png)
+![tflogin](/desafio-semana-1/docs/terraformlogin.png)
 
 3 - Iniciar el directorio de trabajo, visualizar el plan y aplicarlo.
 
