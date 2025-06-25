@@ -101,4 +101,4 @@ El playbook de Ansible realiza las siguientes tareas:
      * result.chicho.com.ar
 
 
-![Imagen 1](/docs/vote.png) ![Imagen 2](/docs/result.png)
+![Imagen 1](/desafio-semana-1/docs/vote.png) ![Imagen 2](/desafio-semana-1/docs/result.png)
