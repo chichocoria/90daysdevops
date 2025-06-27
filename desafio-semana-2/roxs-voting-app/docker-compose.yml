@@ -1,0 +1,60 @@
+services:
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    env_file:
+      - ./worker/.env
+    depends_on:
+      - database
+      - redis
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "apk add --no-cache curl && curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+  vote:
+    build:
+      context: ./vote
+      dockerfile: Dockerfile
+    env_file:
+      - ./vote/.env
+    depends_on:
+      - worker
+    ports:
+      - "80:80"
+    restart: always
+  result:
+    build:
+      context: ./result
+      dockerfile: Dockerfile
+    env_file:
+      - ./result/.env
+    depends_on:
+      - worker
+    ports:
+      - "3000:3000"
+    restart: always
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: votes
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    volumes:  
+      - ./database_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    restart: always
