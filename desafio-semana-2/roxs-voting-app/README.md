@@ -44,8 +44,48 @@ Asegurate de que estos puertos no estén en uso por otros servicios en tu máqui
 * Se agregaron variables de entorno con `.env`
 * Se configuraron `depends_on`
 * Se agregaron `healtcheck` a los servicios principales.
+* Se creo una red personalizada llamada `voting_app_network`
 
 
 🧩 **Pasos para correr la aplicacion**
 
+1. Clonar el repositorio
+
+```
+ git clone https://github.com/chichocoria/90daysdevops.git
+ cd 90daysdevops/desafio-semana-2/roxs-voting-app/
+```
+
+2. Crear `.env` en cada aplicacion son sus respectivas variables de entorno.
+
+Ejmplo:
+```
+DATABASE_HOST=database
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=votes
+REDIS_HOST=redis
+```
+
+3. Levantar aplicacion y contruir imagen desde cero
+
+```
+docker compose up --build
+```
+
+4. Probar servicios.
+* `http://IP` → para votar
+* `http://IP:3000` → para ver los resultados
+
+5. Eliminar entorno.
+
+```
+docker compose down
+```
+
+💥 Extra
+
+Se instalo Beszel con docker-compose para que nos traiga estadisticas y monitoreo de los contenedores.
+
+https://beszel.dev/
 
