@@ -39,3 +39,16 @@ jobs:
         run: |
           docker build -t $REGISTRY/$IMAGE_OWNER/worker:${TAG} ./desafio-semana-3/worker
           docker push $REGISTRY/$IMAGE_OWNER/worker:${TAG}
+            - name: 🔁 Actualizar docker-compose.staging.yml con nuevo tag
+        run: |
+          sed -i "s|ghcr.io/${{ env.IMAGE_OWNER }}/vote:.*|ghcr.io/${{ env.IMAGE_OWNER }}/vote:${TAG}|g" desafio-semana-3/docker-compose.staging.yml
+          sed -i "s|ghcr.io/${{ env.IMAGE_OWNER }}/result:.*|ghcr.io/${{ env.IMAGE_OWNER }}/result:${TAG}|g" desafio-semana-3/docker-compose.staging.yml
+          sed -i "s|ghcr.io/${{ env.IMAGE_OWNER }}/worker:.*|ghcr.io/${{ env.IMAGE_OWNER }}/worker:${TAG}|g" desafio-semana-3/docker-compose.staging.yml
+
+      - name: 🚀 Commit y push del docker-compose actualizado
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add desafio-semana-3/docker-compose.staging.yml
+          git commit -m "🔁 Update docker-compose.staging.yml with tag ${TAG}" || echo "No changes to commit"
+          git push
