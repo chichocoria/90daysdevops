@@ -3,7 +3,6 @@ name: 🚀 Deploy to Staging
 on:
   workflow_run:
     workflows: ["Build and Push Docker Images with Tag"]
-    branches: [develop]
     types:
       - completed
 
@@ -13,23 +12,29 @@ jobs:
     runs-on: [staging]
 
     steps:
-      - name: 📥 Clonar repositorio
+      - name: 📥 Clonar repositorio en rama develop
         uses: actions/checkout@v4
         with:
           ref: develop
-          
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: 🔍 Verificar docker-compose.staging.yml actualizado
+        run: cat desafio-semana-3/docker-compose.staging.yml
+
       - name: 🔐 Login a GitHub Container Registry
         run: |
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: 🧹 Limpiar contenedores anteriores
-        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml down || true
+      - name: 🧹 Bajar contenedores anteriores
+        run: docker compose -f desafio-semana-3/docker-compose.staging.yml down || true
 
-      - name: 📦 Pull de imágenes actualizadas
-        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml pull
+      - name: 📦 Pull de imágenes
+        run: docker compose -f desafio-semana-3/docker-compose.staging.yml pull
 
-      - name: 🚀 Desplegar servicios
-        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml up -d
+      - name: 🚀 Levantar servicios
+        run: docker compose -f desafio-semana-3/docker-compose.staging.yml up -d
 
       - name: ✅ Verificar servicios activos
         run: docker ps
+
