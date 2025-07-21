@@ -1,0 +1,30 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Despliegue automático en Production
+    runs-on: [produccion]
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🔐 Login a GitHub Container Registry
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: 🧹 Limpiar contenedores anteriores
+        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml down || true
+
+      - name: 📦 Pull de imágenes actualizadas
+        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml pull
+
+      - name: 🚀 Desplegar servicios
+        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml up -d
+
+      - name: ✅ Verificar servicios activos
+        run: docker ps
