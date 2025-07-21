@@ -1,9 +1,9 @@
-name: Build and Push Docker Images with Tag
+name: Build and Push Docker Images (Production)
 
 on:
   push:
-    branches: [develop]
-    
+    branches: [main]
+
 permissions:
   contents: write
 
@@ -20,8 +20,8 @@ jobs:
       - name: 📥 Checkout repo
         uses: actions/checkout@v4
 
-      - name: 🏷️ Set tag (short SHA)
-        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+      - name: 🏷️ Set short tag (SHA)
+        run: echo "TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: 🔐 Login to GHCR
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
@@ -40,17 +40,20 @@ jobs:
         run: |
           docker build -t $REGISTRY/$IMAGE_OWNER/worker:${TAG} ./desafio-semana-3/worker
           docker push $REGISTRY/$IMAGE_OWNER/worker:${TAG}
-      
-      - name: 🔁 Actualizar docker-compose.staging.yml con nuevo tag
-        run: |
-          sed -i "s|ghcr.io/${{ env.IMAGE_OWNER }}/vote:.*|ghcr.io/${{ env.IMAGE_OWNER }}/vote:${TAG}|g" desafio-semana-3/docker-compose.staging.yml
-          sed -i "s|ghcr.io/${{ env.IMAGE_OWNER }}/result:.*|ghcr.io/${{ env.IMAGE_OWNER }}/result:${TAG}|g" desafio-semana-3/docker-compose.staging.yml
-          sed -i "s|ghcr.io/${{ env.IMAGE_OWNER }}/worker:.*|ghcr.io/${{ env.IMAGE_OWNER }}/worker:${TAG}|g" desafio-semana-3/docker-compose.staging.yml
 
-      - name: 🚀 Commit y push del docker-compose actualizado
+      - name: 🔁 Actualizar docker-compose.prod.yml con nuevo tag
+        run: |
+          sed -i "s|ghcr.io/.*/vote:.*|ghcr.io/${IMAGE_OWNER}/vote:${TAG}|g" desafio-semana-3/docker-compose.prod.yml
+          sed -i "s|ghcr.io/.*/result:.*|ghcr.io/${IMAGE_OWNER}/result:${TAG}|g" desafio-semana-3/docker-compose.prod.yml
+          sed -i "s|ghcr.io/.*/worker:.*|ghcr.io/${IMAGE_OWNER}/worker:${TAG}|g" desafio-semana-3/docker-compose.prod.yml
+
+      - name: 🔁 Commit y push cambios docker-compose.prod.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add desafio-semana-3/docker-compose.staging.yml
-          git commit -m "🔁 Update docker-compose.staging.yml with tag ${TAG}" || echo "No changes to commit"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
+          git add desafio-semana-3/docker-compose.prod.yml
+          git commit -m "🚀 Update production compose with tag ${TAG}" || echo "No changes to commit"
           git push
