@@ -9,7 +9,7 @@ on:
 jobs:
   deploy:
     name: Despliegue automático en Produccion
-    runs-on: [produccion]
+    runs-on: [production]
 
     steps:
       - name: 📥 Clonar repositorio en rama develop
