@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy:
-    name: Despliegue automático en Staging
+    name: Despliegue automático en Produccion
     runs-on: [produccion]
 
     steps:
