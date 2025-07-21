@@ -1,8 +1,10 @@
 name: 🚀 Deploy to Staging
 
 on:
-  push:
-    branches: [develop]
+  workflow_run:
+    workflows: ["Build and Push Docker Images with Tag"]
+    types:
+      - completed
 
 jobs:
   deploy:
