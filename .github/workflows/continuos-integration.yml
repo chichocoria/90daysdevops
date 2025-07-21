@@ -39,7 +39,8 @@ jobs:
         run: |
           docker build -t $REGISTRY/$IMAGE_OWNER/worker:${TAG} ./desafio-semana-3/worker
           docker push $REGISTRY/$IMAGE_OWNER/worker:${TAG}
-            - name: 🔁 Actualizar docker-compose.staging.yml con nuevo tag
+      
+      - name: 🔁 Actualizar docker-compose.staging.yml con nuevo tag
         run: |
           sed -i "s|ghcr.io/${{ env.IMAGE_OWNER }}/vote:.*|ghcr.io/${{ env.IMAGE_OWNER }}/vote:${TAG}|g" desafio-semana-3/docker-compose.staging.yml
           sed -i "s|ghcr.io/${{ env.IMAGE_OWNER }}/result:.*|ghcr.io/${{ env.IMAGE_OWNER }}/result:${TAG}|g" desafio-semana-3/docker-compose.staging.yml
