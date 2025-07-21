@@ -28,13 +28,13 @@ jobs:
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: 🧹 Bajar contenedores anteriores
-        run: docker compose -f desafio-semana-3/docker-compose.staging.yml down || true
+        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml down || true
 
       - name: 📦 Pull de imágenes
-        run: docker compose -f desafio-semana-3/docker-compose.staging.yml pull
+        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml pull
 
       - name: 🚀 Levantar servicios
-        run: docker compose -f desafio-semana-3/docker-compose.staging.yml up -d
+        run: docker-compose -f desafio-semana-3/docker-compose.staging.yml up -d
 
       - name: ✅ Verificar servicios activos
         run: docker ps
