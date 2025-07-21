@@ -1,29 +1,40 @@
 name: 🚀 Deploy to Production
 
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: ["Build and Push Docker Images (Production)"]
+    branches: [master]
+    types:
+      - completed
 
 jobs:
   deploy:
-    name: Despliegue automático en Production
+    name: Despliegue automático en Staging
     runs-on: [produccion]
 
     steps:
-      - name: 📥 Clonar repositorio
+      - name: 📥 Clonar repositorio en rama develop
         uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true  # 👈 fuerza limpieza del repo anterior
+
+      - name: 🔍 Verificar docker-compose.prod.yml actualizado
+        run: cat desafio-semana-3/docker-compose.prod.yml
 
       - name: 🔐 Login a GitHub Container Registry
         run: |
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: 🧹 Limpiar contenedores anteriores
+      - name: 🧹 Bajar contenedores anteriores
         run: docker-compose -f desafio-semana-3/docker-compose.prod.yml down || true
 
-      - name: 📦 Pull de imágenes actualizadas
+      - name: 📦 Pull de imágenes
         run: docker-compose -f desafio-semana-3/docker-compose.prod.yml pull
 
-      - name: 🚀 Desplegar servicios
+      - name: 🚀 Levantar servicios
         run: docker-compose -f desafio-semana-3/docker-compose.prod.yml up -d
 
       - name: ✅ Verificar servicios activos

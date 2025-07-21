@@ -19,6 +19,7 @@ jobs:
           ref: develop
           fetch-depth: 0
           persist-credentials: false
+          clean: true  # 👈 fuerza limpieza del repo anterior
 
       - name: 🔍 Verificar docker-compose.staging.yml actualizado
         run: cat desafio-semana-3/docker-compose.staging.yml
