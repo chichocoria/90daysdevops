@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: 📥 Clonar repositorio
         uses: actions/checkout@v4
-        with:
-          ref: develop
 
       - name: 🔐 Login a GitHub Container Registry
         run: |
