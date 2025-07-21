@@ -4,7 +4,7 @@ services:
   worker:
     image: ghcr.io/chichocoria/worker:sha-3163ce0
     env_file:
-      - ./worker/.env.production
+      - ./worker/.env
     depends_on:
       - database
       - redis
@@ -21,7 +21,7 @@ services:
   vote:
     image: ghcr.io/chichocoria/vote:sha-3163ce0
     env_file:
-      - ./vote/.env.production
+      - ./vote/.env
     depends_on:
       - worker
     ports:
@@ -33,7 +33,7 @@ services:
   result:
     image: ghcr.io/chichocoria/result:sha-3163ce0
     env_file:
-      - ./result/.env.production
+      - ./result/.env
     depends_on:
       - worker
     ports:
