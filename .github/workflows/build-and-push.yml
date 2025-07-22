@@ -1,0 +1,64 @@
+name: 🚀 Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: ${{ github.repository_owner }}
+  TAG: sha-${{ github.sha }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: 🏷️ Generar TAG corto
+        run: echo "SHORT_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: 🔐 Login a GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
+
+      - name: 🐳 Build & Push vote
+        run: |
+          docker build -t $REGISTRY/$IMAGE_OWNER/vote:${SHORT_TAG} ./desafio-semana-3/vote
+          docker push $REGISTRY/$IMAGE_OWNER/vote:${SHORT_TAG}
+
+      - name: 🐳 Build & Push result
+        run: |
+          docker build -t $REGISTRY/$IMAGE_OWNER/result:${SHORT_TAG} ./desafio-semana-3/result
+          docker push $REGISTRY/$IMAGE_OWNER/result:${SHORT_TAG}
+
+      - name: 🐳 Build & Push worker
+        run: |
+          docker build -t $REGISTRY/$IMAGE_OWNER/worker:${SHORT_TAG} ./desafio-semana-3/worker
+          docker push $REGISTRY/$IMAGE_OWNER/worker:${SHORT_TAG}
+
+      - name: 🔁 Reemplazar tag en el docker-compose correspondiente
+        run: |
+          FILE=""
+          if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
+            FILE="desafio-semana-3/docker-compose.staging.yml"
+          elif [[ "${GITHUB_REF##*/}" == "master" ]]; then
+            FILE="desafio-semana-3/docker-compose.prod.yml"
+          fi
+
+          echo "🔁 Actualizando $FILE con imagenes tag: ${SHORT_TAG}"
+
+          sed -i "s|ghcr.io/.*/vote:.*|ghcr.io/${IMAGE_OWNER}/vote:${SHORT_TAG}|g" $FILE
+          sed -i "s|ghcr.io/.*/result:.*|ghcr.io/${IMAGE_OWNER}/result:${SHORT_TAG}|g" $FILE
+          sed -i "s|ghcr.io/.*/worker:.*|ghcr.io/${IMAGE_OWNER}/worker:${SHORT_TAG}|g" $FILE
+
+      - name: 🚀 Commit y push del docker-compose actualizado
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add desafio-semana-3/docker-compose.*.yml
+          git commit -m "🔁 Update docker-compose with tag ${SHORT_TAG}" || echo "No changes to commit"
+          git push
