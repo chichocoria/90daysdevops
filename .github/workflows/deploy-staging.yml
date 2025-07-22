@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: master
       - run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - run: docker-compose -f desafio-semana-3/docker-compose.staging.yml down || true
       - run: docker-compose -f desafio-semana-3/docker-compose.staging.yml pull
