@@ -1,0 +1,34 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [develop]
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    branches: [develop]
+    types:
+      - completed
+
+jobs:
+  build-push:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set tag
+        run: echo "TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & push images
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/vote:$TAG desafio-semana-3/vote
+          docker build -t ghcr.io/${{ github.repository_owner }}/result:$TAG desafio-semana-3/result
+          docker build -t ghcr.io/${{ github.repository_owner }}/worker:$TAG desafio-semana-3/worker
+
+          docker push ghcr.io/${{ github.repository_owner }}/vote:$TAG
+          docker push ghcr.io/${{ github.repository_owner }}/result:$TAG
+          docker push ghcr.io/${{ github.repository_owner }}/worker:$TAG
