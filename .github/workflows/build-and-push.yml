@@ -58,10 +58,12 @@ jobs:
           sed -i "s|ghcr.io/.*/worker:.*|ghcr.io/${IMAGE_OWNER}/worker:${SHORT_TAG}|g" $FILE
 
       - name: 🚀 Commit y Push del docker-compose actualizado con token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add desafio-semana-3/docker-compose.*.yml
           git commit -m "🔁 Update docker-compose with tag ${SHORT_TAG}" || echo "No changes to commit"
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
           git push origin HEAD:${{ github.ref_name }}
