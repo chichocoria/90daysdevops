@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: 📥 Checkout del repositorio
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: 🏷️ Generar TAG corto
         run: echo "SHORT_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
