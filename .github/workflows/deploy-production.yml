@@ -2,7 +2,7 @@ name: 🚀 Deploy to Production
 
 on:
   workflow_run:
-    workflows: ["Build and Push Docker Images (Production)"]
+    workflows: ["🔁 Update docker-compose with new tag"]
     types:
       - completed
 
