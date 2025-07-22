@@ -6,10 +6,12 @@ on:
       - develop
       - master
 
+permissions:
+  contents: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_OWNER: ${{ github.repository_owner }}
-  TAG: sha-${{ github.sha }}
 
 jobs:
   build-and-push:
@@ -19,7 +21,7 @@ jobs:
       - name: 📥 Checkout del repositorio
         uses: actions/checkout@v4
         with:
-          persist-credentials: false
+          persist-credentials: false  # ❌ desactiva el token por defecto
 
       - name: 🏷️ Generar TAG corto
         run: echo "SHORT_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
@@ -42,28 +44,31 @@ jobs:
           docker build -t $REGISTRY/$IMAGE_OWNER/worker:${SHORT_TAG} ./desafio-semana-3/worker
           docker push $REGISTRY/$IMAGE_OWNER/worker:${SHORT_TAG}
 
-      - name: 🔁 Reemplazar tag en el docker-compose correspondiente
+      - name: 🔁 Reemplazar TAG en docker-compose
         run: |
+          BRANCH_NAME="${GITHUB_REF##*/}"
           FILE=""
-          if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
             FILE="desafio-semana-3/docker-compose.staging.yml"
-          elif [[ "${GITHUB_REF##*/}" == "master" ]]; then
+          elif [[ "$BRANCH_NAME" == "master" ]]; then
             FILE="desafio-semana-3/docker-compose.prod.yml"
+          else
+            echo "❌ Rama no reconocida: $BRANCH_NAME"
+            exit 1
           fi
 
-          echo "🔁 Actualizando $FILE con imagenes tag: ${SHORT_TAG}"
-
+          echo "🔁 Actualizando $FILE con imágenes tag: ${SHORT_TAG}"
           sed -i "s|ghcr.io/.*/vote:.*|ghcr.io/${IMAGE_OWNER}/vote:${SHORT_TAG}|g" $FILE
           sed -i "s|ghcr.io/.*/result:.*|ghcr.io/${IMAGE_OWNER}/result:${SHORT_TAG}|g" $FILE
           sed -i "s|ghcr.io/.*/worker:.*|ghcr.io/${IMAGE_OWNER}/worker:${SHORT_TAG}|g" $FILE
 
-      - name: 🚀 Commit y Push del docker-compose actualizado con token
+      - name: 🚀 Commit y Push del docker-compose actualizado
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add desafio-semana-3/docker-compose.*.yml
           git commit -m "🔁 Update docker-compose with tag ${SHORT_TAG}" || echo "No changes to commit"
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}
           git push origin HEAD:${{ github.ref_name }}
