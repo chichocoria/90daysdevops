@@ -2,7 +2,7 @@ name: 🚀 Deploy to Staging
 
 on:
   workflow_run:
-    workflows: ["Build and Push Docker Images"]
+    workflows: ["🔁 Update docker-compose with new tag"]
     branches: [develop]
     types:
       - completed

@@ -6,70 +6,35 @@ on:
       - develop
       - master
 
-permissions:
-  contents: write
-
 env:
   REGISTRY: ghcr.io
   IMAGE_OWNER: ${{ github.repository_owner }}
 
 jobs:
   build-and-push:
-    if: "!contains(github.event.head_commit.message, '🔁 Update docker-compose')"
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout del repositorio
+      - name: 📥 Checkout repo
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false  # ❌ desactiva el token por defecto
 
-      - name: 🏷️ Generar TAG corto
-        run: echo "SHORT_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
+      - name: 🏷️ Set tag (short SHA)
+        run: echo "TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      - name: 🔐 Login a GHCR
+      - name: 🔐 Login to GHCR
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
 
       - name: 🐳 Build & Push vote
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/vote:${SHORT_TAG} ./desafio-semana-3/vote
-          docker push $REGISTRY/$IMAGE_OWNER/vote:${SHORT_TAG}
+          docker build -t $REGISTRY/$IMAGE_OWNER/vote:${TAG} ./desafio-semana-3/vote
+          docker push $REGISTRY/$IMAGE_OWNER/vote:${TAG}
 
       - name: 🐳 Build & Push result
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/result:${SHORT_TAG} ./desafio-semana-3/result
-          docker push $REGISTRY/$IMAGE_OWNER/result:${SHORT_TAG}
+          docker build -t $REGISTRY/$IMAGE_OWNER/result:${TAG} ./desafio-semana-3/result
+          docker push $REGISTRY/$IMAGE_OWNER/result:${TAG}
 
       - name: 🐳 Build & Push worker
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/worker:${SHORT_TAG} ./desafio-semana-3/worker
-          docker push $REGISTRY/$IMAGE_OWNER/worker:${SHORT_TAG}
-
-      - name: 🔁 Reemplazar TAG en docker-compose
-        run: |
-          BRANCH_NAME="${GITHUB_REF##*/}"
-          FILE=""
-          if [[ "$BRANCH_NAME" == "develop" ]]; then
-            FILE="desafio-semana-3/docker-compose.staging.yml"
-          elif [[ "$BRANCH_NAME" == "master" ]]; then
-            FILE="desafio-semana-3/docker-compose.prod.yml"
-          else
-            echo "❌ Rama no reconocida: $BRANCH_NAME"
-            exit 1
-          fi
-
-          echo "🔁 Actualizando $FILE con imágenes tag: ${SHORT_TAG}"
-          sed -i "s|ghcr.io/.*/vote:.*|ghcr.io/${IMAGE_OWNER}/vote:${SHORT_TAG}|g" $FILE
-          sed -i "s|ghcr.io/.*/result:.*|ghcr.io/${IMAGE_OWNER}/result:${SHORT_TAG}|g" $FILE
-          sed -i "s|ghcr.io/.*/worker:.*|ghcr.io/${IMAGE_OWNER}/worker:${SHORT_TAG}|g" $FILE
-
-      - name: 🚀 Commit y Push del docker-compose actualizado
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add desafio-semana-3/docker-compose.*.yml
-          git commit -m "🔁 Update docker-compose with tag ${SHORT_TAG}" || echo "No changes to commit"
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}
-          git push origin HEAD:${{ github.ref_name }}
+          docker build -t $REGISTRY/$IMAGE_OWNER/worker:${TAG} ./desafio-semana-3/worker
+          docker push $REGISTRY/$IMAGE_OWNER/worker:${TAG}
