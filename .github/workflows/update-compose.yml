@@ -3,7 +3,7 @@ name: Update docker-compose tag
 on:
   workflow_run:
     workflows: ["Build and Push Docker Images"]
-    branches: [develop]
+    branches: [master]
     types:
       - completed
 
