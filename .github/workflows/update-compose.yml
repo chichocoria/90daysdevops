@@ -29,11 +29,11 @@ jobs:
 
       - name: Commit changes
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token automático con permisos
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add desafio-semana-3/docker-compose.staging.yml
           git commit -m "🔁 Update staging tag ${TAG}" || echo "No changes"
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
           git push origin master
