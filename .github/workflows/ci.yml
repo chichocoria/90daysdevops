@@ -60,8 +60,7 @@ jobs:
           sleep 10
           curl -f http://localhost:80 || exit 1
           curl -f http://localhost:3000 || exit 1
-          pwd
-          docker compose down
+          docker compose -f desafio-semana-3/docker-compose.yml down
   # 🏗️ BUILD Y PUSH DE IMÁGENES
   docker-build-and-push:
     needs: integration-tests
