@@ -36,4 +36,4 @@ jobs:
           git add desafio-semana-3/docker-compose.staging.yml
           git commit -m "🔁 Update staging tag ${TAG}" || echo "No changes"
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}
-          git push origin develop
+          git push origin master
