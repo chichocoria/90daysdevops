@@ -79,17 +79,14 @@ jobs:
         run: |
           docker build -t $REGISTRY/$IMAGE_PREFIX/vote:${TAG::7} desafio-semana-3/vote
           docker push $REGISTRY/$IMAGE_PREFIX/vote:${TAG::7}
-          docker push $REGISTRY/$IMAGE_PREFIX/vote:latest
 
       - name: Build and push result
         run: |
           docker build -t $REGISTRY/$IMAGE_PREFIX/result:${TAG::7} desafio-semana-3/result
           docker push $REGISTRY/$IMAGE_PREFIX/result:${TAG::7}
-          docker push $REGISTRY/$IMAGE_PREFIX/result:latest
 
       - name: Build and push worker
         run: |
           docker build -t $REGISTRY/$IMAGE_PREFIX/worker:${TAG::7} desafio-semana-3/worker
           docker push $REGISTRY/$IMAGE_PREFIX/worker:${TAG::7}
-          docker push $REGISTRY/$IMAGE_PREFIX/worker:latest
 
