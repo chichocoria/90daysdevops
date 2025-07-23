@@ -60,7 +60,6 @@ jobs:
           sleep 20
           curl -f http://localhost:80 || exit 1
           curl -f http://localhost:3000 || exit 1
-          docker compose -f desafio-semana-3/docker-compose down
 
   # 🏗️ BUILD Y PUSH DE IMÁGENES
   docker-build-and-push:
