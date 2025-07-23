@@ -7,6 +7,11 @@ on:
     types:
       - completed
 
+# ↓↓↓ Permisos explícitos para el token ↓↓↓
+permissions:
+  contents: write  # Permite hacer push
+  pull-requests: write  # Permite crear PRs
+
 jobs:
   update-tag-and-pr:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
