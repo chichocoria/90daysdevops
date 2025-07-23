@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: vote
+        working-directory: desafio-semana-3/vote
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: result
+        working-directory: desafio-semana-3/result
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: worker
+        working-directory: desafio-semana-3/worker
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -56,11 +56,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run integration tests
         run: |
-          docker-compose -f docker-compose.yml up -d
+          desafio-semana-3/docker-compose -f docker-compose.yml up -d
           sleep 10
           curl -f http://localhost:5000 || exit 1
           curl -f http://localhost:5001 || exit 1
-          docker-compose down
+          desafio-semana-3/docker-compose down
 
   # 🏗️ BUILD Y PUSH DE IMÁGENES
   docker-build-and-push:
