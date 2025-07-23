@@ -59,7 +59,7 @@ jobs:
           docker compose -f desafio-semana-3/docker-compose.yml up -d
           sleep 10
           curl -f http://localhost:80 || exit 1
-          curl -f http://localhost:3001 || exit 1
+          curl -f http://localhost:3000 || exit 1
           desafio-semana-3/docker-compose down
 
   # 🏗️ BUILD Y PUSH DE IMÁGENES
