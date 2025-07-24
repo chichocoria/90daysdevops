@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   worker:
-    image: ghcr.io/chichocoria/worker:sha-585047d
+    image: ghcr.io/chichocoria/90daysdevops/worker:sha-585047d
     env_file:
       - ./worker/.env
     depends_on:
@@ -19,7 +19,7 @@ services:
       - voting_app_network
 
   vote:
-    image: ghcr.io/chichocoria/vote:sha-585047d
+    image: ghcr.io/chichocoria/90daysdevops/vote:sha-585047d
     env_file:
       - ./vote/.env
     depends_on:
@@ -31,7 +31,7 @@ services:
       - voting_app_network
 
   result:
-    image: ghcr.io/chichocoria/result:sha-585047d
+    image: ghcr.io/chichocoria/90daysdevops/result:sha-585047d
     env_file:
       - ./result/.env
     depends_on:
