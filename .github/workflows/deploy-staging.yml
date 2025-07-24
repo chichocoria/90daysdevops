@@ -22,6 +22,7 @@ jobs:
       - name: Docker Compose - Pull & Deploy
         run: |
           export IMAGE_TAG=$(cut -d '=' -f2 desafio-semana-3/.env.staging | cut -c1-7)
+          echo "IMAGE_TAG >> $GITHUB_ENV
           echo "Usando TAG: $IMAGE_TAG"
           sed "s/\${IMAGE_TAG}/$IMAGE_TAG/g" desafio-semana-3/docker-compose.staging.yml > desafio-semana-3/docker-compose.tmp.yml
           docker-compose -f desafio-semana-3/docker-compose.tmp.yml down
@@ -36,4 +37,11 @@ jobs:
 
       - name: Smoke test
         run: curl -f http://localhost:3000 || exit 1
+
+      - name: Notificar a Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\":\":white_check_mark: Deployment a Staging exitoso con TAG \`$IMAGE_TAG\`\"}" \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
 
