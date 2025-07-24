@@ -1,0 +1,47 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: [production]
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Backup de base de datos
+        run: bash desafio-semana-3/scripts/backup.sh
+
+      - name: Login a GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Obtener SHA corto del último commit en main
+        id: sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Preparar docker-compose para producción
+        run: |
+          export IMAGE_TAG=${{ steps.sha.outputs.sha_short }}
+          echo "Usando TAG: $IMAGE_TAG"
+          sed "s/\${IMAGE_TAG}/$IMAGE_TAG/g" desafio-semana-3/docker-compose.prod.yml > desafio-semana-3/docker-compose.tmp.yml
+
+      - name: Docker Compose - Pull & Deploy
+        run: |
+          docker-compose -f desafio-semana-3/docker-compose.tmp.yml down
+          docker-compose -f desafio-semana-3/docker-compose.tmp.yml pull
+          docker-compose -f desafio-semana-3/docker-compose.tmp.yml up -d
+
+      - name: Esperar servicios
+        run: sleep 10
+
+      - name: Health check
+        run: bash desafio-semana-3/scripts/health-check.sh http://localhost:80
+
+      - name: Smoke test
+        run: curl -f http://localhost:3000 || exit 1
+
+      - name: Notificación final
+        run: echo "✅ Despliegue en producción exitoso"
