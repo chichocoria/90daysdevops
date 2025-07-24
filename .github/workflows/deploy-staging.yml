@@ -1,3 +1,4 @@
+# .github/workflows/deploy-staging.yml
 name: Deploy to Staging
 
 on:
@@ -9,24 +10,23 @@ on:
 jobs:
   deploy:
     runs-on: [staging]
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set image tag
-        id: tag
-        run: echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+      - name: Extraer TAG del commit
+        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" > desafio-semana-3/.env.staging
 
-      - name: Pull and deploy services with Docker Compose
+      - name: Login a GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Docker Compose - Pull & Deploy
         run: |
-          IMAGE_TAG=${{ steps.tag.outputs.tag }}
-          echo "Deploying with tag: $IMAGE_TAG"
+          docker-compose --env-file desafio-semana-3/.env.staging -f desafio-semana-3/docker-compose.staging.yml down
+          docker-compose --env-file desafio-semana-3/.env.staging -f desafio-semana-3/docker-compose.staging.yml pull
+          docker-compose --env-file desafio-semana-3/.env.staging -f desafio-semana-3/docker-compose.staging.yml up -d
 
-          export IMAGE_TAG=$IMAGE_TAG
-          docker-compose -f desafio-semana-3/docker-compose.staging.yml down
-          docker-compose -f desafio-semana-3/docker-compose.staging.yml pull
-          docker-compose -f desafio-semana-3/docker-compose.staging.yml up -d
-
-      - name: Wait for services
+      - name: Esperar que los servicios estén listos
         run: sleep 10
 
       - name: Health check
@@ -34,3 +34,4 @@ jobs:
 
       - name: Smoke test
         run: curl -f http://localhost:3000 || exit 1
+
