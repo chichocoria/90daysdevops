@@ -10,8 +10,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extraer IMAGE_TAG desde el SHA del commit actual
-        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" > desafio-semana-3/.env.prod
+      - name: Instalar jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Obtener último commit SHA de develop
+        id: get_sha
+        run: |
+          SHA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/commits/develop \
+          | jq -r '.sha' | cut -c1-7)
+          echo "IMAGE_TAG=$SHA" > desafio-semana-3/.env.prod
+          echo "Último SHA de develop: $SHA"  
 
       - name: Login a GHCR
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
