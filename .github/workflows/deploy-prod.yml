@@ -27,7 +27,7 @@ jobs:
 
       - name: Docker Compose - Pull & Deploy
         run: |
-          export IMAGE_TAG=$(cut -d '=' -f2 desafio-semana-3/.env.prod | cut -c1-7)
+          export IMAGE_TAG=$(cut -d '=' -f2 desafio-semana-3/.env.prod)
           echo "Usando TAG: $IMAGE_TAG"
           sed "s/\${IMAGE_TAG}/$IMAGE_TAG/g" desafio-semana-3/docker-compose.prod.yml > desafio-semana-3/docker-compose.tmp.yml
           docker-compose -f desafio-semana-3/docker-compose.tmp.yml down
