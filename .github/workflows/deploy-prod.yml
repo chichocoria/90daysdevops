@@ -42,3 +42,10 @@ jobs:
 
       - name: Smoke test
         run: curl -f http://localhost:3000 || exit 1
+
+      - name: Notificar a Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\":\":white_check_mark: Deployment a Producción exitoso con TAG \`$IMAGE_TAG\`\"}" \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
