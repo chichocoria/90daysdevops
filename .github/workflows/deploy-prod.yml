@@ -10,8 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extraer TAG real desde workflow_run
-        run: echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" > desafio-semana-3/.env.prod
+      - name: Extraer IMAGE_TAG desde el SHA del commit actual
+        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" > desafio-semana-3/.env.prod
 
       - name: Login a GHCR
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
