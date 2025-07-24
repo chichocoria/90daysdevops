@@ -22,8 +22,9 @@ jobs:
           echo "Deploying with tag: $IMAGE_TAG"
 
           export IMAGE_TAG=$IMAGE_TAG
-          docker compose -f desafio-semana-3/docker-compose.staging.yml pull
-          docker compose -f desafio-semana-3/docker-compose.staging.yml up -d
+          docker-compose -f desafio-semana-3/docker-compose.staging.yml down
+          docker-compose -f desafio-semana-3/docker-compose.staging.yml pull
+          docker-compose -f desafio-semana-3/docker-compose.staging.yml up -d
 
       - name: Wait for services
         run: sleep 10
