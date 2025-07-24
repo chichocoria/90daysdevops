@@ -1,0 +1,98 @@
+# .github/workflows/ci.yml
+name: CI Pipeline
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  # ✅ TEST DE PYTHON (vote)
+  test-vote:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desafio-semana-3/vote
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover
+
+  # ✅ TEST DE NODE (result)
+  test-result:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desafio-semana-3/result
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm test
+
+  # ✅ TEST DE NODE (worker)
+  test-worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desafio-semana-3/worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm test
+
+  # 🧪 INTEGRATION TESTS
+  integration-tests:
+    needs: [test-vote, test-result, test-worker]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run integration tests
+        run: |
+          docker compose -f desafio-semana-3/docker-compose.yml up -d
+          sleep 10
+          curl -f http://localhost:80 || exit 1
+          curl -f http://localhost:3000 || exit 1
+          docker compose -f desafio-semana-3/docker-compose.yml down
+  # 🏗️ BUILD Y PUSH DE IMÁGENES
+  docker-build-and-push:
+    needs: integration-tests
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_PREFIX: ${{ github.repository }}
+      TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push vote
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX/vote:${TAG::7} ./desafio-semana-3/vote
+          docker tag $REGISTRY/$IMAGE_PREFIX/vote:${TAG::7} $REGISTRY/$IMAGE_PREFIX/vote:latest
+          docker push $REGISTRY/$IMAGE_PREFIX/vote:${TAG::7}
+          docker push $REGISTRY/$IMAGE_PREFIX/vote:latest
+
+      - name: Build and push result
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX/result:${TAG::7} ./desafio-semana-3/result
+          docker tag $REGISTRY/$IMAGE_PREFIX/result:${TAG::7} $REGISTRY/$IMAGE_PREFIX/result:latest
+          docker push $REGISTRY/$IMAGE_PREFIX/result:${TAG::7}
+          docker push $REGISTRY/$IMAGE_PREFIX/result:latest
+
+      - name: Build and push worker
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX/worker:${TAG::7} ./desafio-semana-3/worker
+          docker tag $REGISTRY/$IMAGE_PREFIX/worker:${TAG::7} $REGISTRY/$IMAGE_PREFIX/worker:latest
+          docker push $REGISTRY/$IMAGE_PREFIX/worker:${TAG::7}
+          docker push $REGISTRY/$IMAGE_PREFIX/worker:latest
+

@@ -1,0 +1,35 @@
+name: Deploy to Staging
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [develop]
+
+jobs:
+  deploy:
+    runs-on: [staging]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: tag
+        run: echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Pull and deploy services with Docker Compose
+        run: |
+          IMAGE_TAG=${{ steps.tag.outputs.tag }}
+          echo "Deploying with tag: $IMAGE_TAG"
+
+          export IMAGE_TAG=$IMAGE_TAG
+          docker compose -f desafio-semana-3/docker-compose.staging.yml pull
+          docker compose -f desafio-semana-3/docker-compose.staging.yml up -d
+
+      - name: Wait for services
+        run: sleep 10
+
+      - name: Health check
+        run: bash desafio-semana-3/scripts/health-check.sh http://localhost:80
+
+      - name: Smoke test
+        run: curl -f http://localhost:3000 || exit 1
