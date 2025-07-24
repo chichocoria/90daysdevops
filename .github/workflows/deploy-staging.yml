@@ -22,6 +22,7 @@ jobs:
       - name: Docker Compose - Pull & Deploy
         run: |
           export IMAGE_TAG=$(cut -d '=' -f2 desafio-semana-3/.env.staging | cut -c1-7)
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV  # <-- esto lo guarda globalmente para usarlo en notificaciones
           echo "Usando TAG: $IMAGE_TAG"
           sed "s/\${IMAGE_TAG}/$IMAGE_TAG/g" desafio-semana-3/docker-compose.staging.yml > desafio-semana-3/docker-compose.tmp.yml
           docker-compose -f desafio-semana-3/docker-compose.tmp.yml down
