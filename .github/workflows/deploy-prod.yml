@@ -5,36 +5,27 @@ on:
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
     runs-on: [production]
 
     steps:
-      - name: Checkout del código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Backup de base de datos
-        run: bash desafio-semana-3/scripts/backup.sh
+      - name: Extraer TAG real desde workflow_run
+        run: echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" > desafio-semana-3/.env.prod
 
       - name: Login a GHCR
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Obtener SHA corto del último commit en main
-        id: sha
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Preparar docker-compose para producción
-        run: |
-          export IMAGE_TAG=${{ steps.sha.outputs.sha_short }}
-          echo "Usando TAG: $IMAGE_TAG"
-          sed "s/\${IMAGE_TAG}/$IMAGE_TAG/g" desafio-semana-3/docker-compose.prod.yml > desafio-semana-3/docker-compose.tmp.yml
-
       - name: Docker Compose - Pull & Deploy
         run: |
+          export IMAGE_TAG=$(cut -d '=' -f2 desafio-semana-3/.env.prod | cut -c1-7)
+          echo "Usando TAG: $IMAGE_TAG"
+          sed "s/\${IMAGE_TAG}/$IMAGE_TAG/g" desafio-semana-3/docker-compose.prod.yml > desafio-semana-3/docker-compose.tmp.yml
           docker-compose -f desafio-semana-3/docker-compose.tmp.yml down
           docker-compose -f desafio-semana-3/docker-compose.tmp.yml pull
           docker-compose -f desafio-semana-3/docker-compose.tmp.yml up -d
 
-      - name: Esperar servicios
+      - name: Esperar que los servicios estén listos
         run: sleep 10
 
       - name: Health check
@@ -42,6 +33,3 @@ jobs:
 
       - name: Smoke test
         run: curl -f http://localhost:3000 || exit 1
-
-      - name: Notificación final
-        run: echo "✅ Despliegue en producción exitoso"
