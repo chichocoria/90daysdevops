@@ -1,5 +1,3 @@
-# .github/workflows/deploy-staging.yml
-#prueba
 name: Deploy to Staging
 
 on:
@@ -14,20 +12,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: "develop"
 
-      - name: Extraer TAG del commit
-        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" > desafio-semana-3/.env.staging
+      - name: Extraer TAG real desde workflow_run
+        run: echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" > desafio-semana-3/.env.staging
 
       - name: Login a GHCR
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Docker Compose - Pull & Deploy
         run: |
-          docker-compose --env-file desafio-semana-3/.env.staging -f desafio-semana-3/docker-compose.staging.yml down
-          docker-compose --env-file desafio-semana-3/.env.staging -f desafio-semana-3/docker-compose.staging.yml pull
-          docker-compose --env-file desafio-semana-3/.env.staging -f desafio-semana-3/docker-compose.staging.yml up -d
+          export IMAGE_TAG=$(cut -d '=' -f2 desafio-semana-3/.env.staging | cut -c1-7)
+          echo "Usando TAG: $IMAGE_TAG"
+          sed "s/\${IMAGE_TAG}/$IMAGE_TAG/g" desafio-semana-3/docker-compose.staging.yml > docker-compose.tmp.yml
+          docker-compose -f docker-compose.tmp.yml down
+          docker-compose -f docker-compose.tmp.yml pull
+          docker-compose -f docker-compose.tmp.yml up -d
 
       - name: Esperar que los servicios estén listos
         run: sleep 10
