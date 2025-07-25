@@ -44,9 +44,31 @@ jobs:
       - name: Smoke test
         run: curl -f http://localhost:3000 || exit 1
 
-      - name: Notificar a Discord
+      - name: Notificación Discord - Producción
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           curl -H "Content-Type: application/json" \
-            -X POST \
-            -d "{\"content\":\":white_check_mark: Deployment a Producción exitoso con TAG \`$IMAGE_TAG\`\"}" \
-            ${{ secrets.DISCORD_WEBHOOK_URL }}
+          -X POST \
+          -d "{
+            \"content\": null,
+            \"embeds\": [
+              {
+                \"title\": \"🚀 Deployment a *Producción* completado con éxito\",
+                \"color\": 16776960,
+                \"fields\": [
+                  { \"name\": \"🔖 TAG\", \"value\": \"\`${IMAGE_TAG}\`\", \"inline\": true },
+                  { \"name\": \"🧑‍💻 Actor\", \"value\": \"${{ github.actor }}\", \"inline\": true },
+                  { \"name\": \"📄 Commit\", \"value\": \"[${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})\" },
+                  { \"name\": \"📦 Servicios\", \"value\": \"vote, worker, result\" },
+                  { \"name\": \"🕒 Hora\", \"value\": \"$(date -u +"%Y-%m-%d %H:%M:%S UTC")\" }
+                ],
+                \"footer\": {
+                  \"text\": \"Workflow: ${{ github.workflow }}\"
+                }
+              }
+            ]
+          }" \
+          $DISCORD_WEBHOOK_URL
+
